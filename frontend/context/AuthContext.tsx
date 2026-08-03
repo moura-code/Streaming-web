@@ -28,21 +28,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (data: User) => {
     try {
       const response = await api.post<{ msg: string; token: string }>(
-        "http://localhost:3001/users/login",
+        "/users/login",
         data
       );
-   
+
       if (response.status == 201) {
-        const { msg, token } = response.data;
+        const { token } = response.data;
         setCookie(undefined, "Authentication", token);
         api.defaults.headers["Authorization"] = `Bearer ${token}`;
         setIsAuthenticated(true);
       }
     } catch (e) {
-
-
-      console.log(e)
-      setError(e.response.data.message);
+      setError(e?.response?.data?.message ?? "No se pudo conectar con el servidor");
     }
   };
 

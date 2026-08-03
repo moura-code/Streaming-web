@@ -3,9 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Param,
-  Delete,
-  Put,
   Res,
   UseGuards,
   Req,
@@ -77,61 +74,28 @@ export class UsersController {
     response.send({ msg: 'you are login', token: token });
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  async getUser(@CurrentUser() user: User, @Req() request) {
-    
-
-    console.log("chegou no controler")
-    const cookie = request?.headers.cookie;
-    if (!this.isTokenValid(user.email, cookie.split('=')[1])) {
-      throw new UnauthorizedException('Usuario ya ha hecho login en otro dispositivo o necesitas hacer login de vuelta');
-    }
-    console.log("chegou cookie n usado")
+  @Post()
+  async create(@Body() body: CreateUser): Promise<Partial<User>> {
+    const plazo = new Date();
+    plazo.setDate(plazo.getDate() + 30);
+    const user = await this.usersService.create({
+      email: body.email,
+      password: await bcrypt.hash(body.password, 10),
+      plazo,
+    } as User);
     delete user.password;
     return user;
   }
-  /*
-  //get all users
-  @Get()
-  async findAll(): Promise<User[]> {
-    return await this.usersService.findall();
-  }
-  @UseGuards(JwtAuthGuard)
-  //get one user
-  @Get(':id')
-  async findOne(@Param('id') id: number): Promise<User> {
-    const user = await this.usersService.findOne(id);
-    if (!user) {
-      throw new Error('User not found');
-    } else {
-      return user;
-    }
-  }
 
-  //create user
-  @Post()
-  async create(@Body() user: User): Promise<User> {
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    user.password = hashedPassword;
-    return await this.usersService.create(user);
-  }
   @UseGuards(JwtAuthGuard)
-  //update user
-  @Put(':id')
-  async update(@Param('id') id: number, @Body() user: User): Promise<User> {
-    return this.usersService.update(id, user);
-  }
-  @UseGuards(JwtAuthGuard)
-  //delete user
-  @Delete(':id')
-  async delete(@Param('id') id: number): Promise<void> {
-    //handle the error if user not found
-    const user = await this.usersService.findOne(id);
-    if (!user) {
-      throw new Error('User not found');
+  @Get('me')
+  async getUser(@CurrentUser() user: User, @Req() request) {
+    const cookieHeader: string = request?.headers?.cookie ?? '';
+    const token = /(?:^|;\s*)Authentication=([^;]+)/.exec(cookieHeader)?.[1];
+    if (!token || !this.isTokenValid(user.email, token)) {
+      throw new UnauthorizedException('Usuario ya ha hecho login en otro dispositivo o necesitas hacer login de vuelta');
     }
-    return this.usersService.delete(id);
+    delete user.password;
+    return user;
   }
-  */
 }

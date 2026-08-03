@@ -1,9 +1,9 @@
-import {IsString} from 'class-validator'
-export class CreateUser{
+import { IsEmail, IsString } from 'class-validator';
 
-    @IsString()
-    email:string
-    @IsString()
-    password:string
+export class CreateUser {
+  @IsEmail()
+  email: string;
 
+  @IsString()
+  password: string;
 }
