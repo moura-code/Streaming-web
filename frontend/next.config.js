@@ -4,6 +4,6 @@ module.exports = {
     transpilePackages: ["ui"],
   },
   env: {
-    BASE_URL: process.env.BASE_URL,
+    BACKEND_URL: process.env.BACKEND_URL,
   }
 };

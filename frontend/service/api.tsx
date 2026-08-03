@@ -1,23 +1,23 @@
 import axios from "axios";
 import { parseCookies } from "nookies";
 
-const cokkies = parseCookies();
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export const api = axios.create({
+  baseURL: BACKEND_URL,
   withCredentials: true,
 });
-const { Authentication: token } = cokkies;
+
+const { Authentication: token } = parseCookies();
 if (token) api.defaults.headers.Authorization = `${token}`;
 
-export async function recoverUserInfo(cokkies?) {
-  if (cokkies) {
-    const { Authentication: token } = cokkies;
-    if (token) api.defaults.headers.Authorization = `${token}`;
-  }
+export async function recoverUserInfo(cookies?) {
+  const authCookie = cookies?.Authentication;
+  if (authCookie) api.defaults.headers.Authorization = `${authCookie}`;
 
-  return api.get("http://backend:3001/users/me", {
+  return api.get("/users/me", {
     headers: {
-      Cookie: `Authentication=${cokkies.Authentication}`
+      Cookie: `Authentication=${authCookie}`,
     },
   });
 }
